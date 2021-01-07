@@ -1,6 +1,6 @@
 ﻿using Cw5.DTOs.Requests;
 using Cw5.DTOs.Responses;
-using System.Collections.ObjectModel;
+
 
 namespace Cw5.Services
 {
@@ -8,7 +8,7 @@ namespace Cw5.Services
     {
         public StudentsEnrollmentResponse StartEnrollStudent(EnrollStudentRequest request);
 
-        public PromoteStudents(PromoteStudentsRequest request);
+        public PromoteStudentsResponse PromoteStudents(PromoteStudentsRequest request);
 
     }
 }

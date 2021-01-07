@@ -20,9 +20,21 @@ namespace Cw5.Controllers
         [HttpPost]
         public IActionResult StartStudentsEnroll([FromBody] EnrollStudentRequest request)
         {
-            var enrollmentResult = _dbService.StartEnrollStudent(request);
-            if (enrollmentResult != null) return Created($"api/students/EnrollStudentRequest", enrollmentResult);
-            return BadRequest(enrollmentResult);
+            try
+            {
+                var enrollmentResult = _dbService.StartEnrollStudent(request);
+                if (enrollmentResult == null) return BadRequest("EnrollmentResult is null");
+                return  Created($"api/students/enrollments", enrollmentResult);
+
+
+            }
+            catch (EnrollmentException e)
+            {
+
+                return BadRequest(e.Message);
+            }
+
+           
         }
 
         [HttpPost("promotions")]
