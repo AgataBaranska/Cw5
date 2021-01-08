@@ -1,6 +1,7 @@
 ﻿using Cw5.DTOs.Requests;
 using Cw5.DTOs.Responses;
 using System;
+using System.Data;
 using System.Data.SqlClient;
 using System.Reflection.Metadata;
 
@@ -56,8 +57,9 @@ namespace Cw5.Services
 
                     com.CommandText = "SELECT IdEnrollment FROM Enrollment WHERE IdStudy =@IdStudy AND Semester = 1 ORDER BY StartDate DESC";
                     com.Parameters.AddWithValue("IdStudy", idStudy);
-                    dr = com.ExecuteReader();
                     int idEnrollment;
+                    dr = com.ExecuteReader();
+                   
                     DateTime startDate = DateTime.Now;
                     if (dr.HasRows)
                     {
@@ -147,10 +149,8 @@ namespace Cw5.Services
 
                 com.Connection = con;
                 con.Open();
-                com.CommandText = "Select * FROM Enrollment e JOIN Studies s ON e.IdStudy = s.IdStudy WHERE e.Semester = @Semester AND s.Name = @Studies";
-                var dr = com.ExecuteReader();
-                if (!dr.HasRows) return null;
-
+               
+              
 
 
                 //Procedura składowana - treść
@@ -159,7 +159,7 @@ namespace Cw5.Services
                 AS
                 BEGIN
                 DECLARE @IdStudy INT = (SELECT s.IdStudy FROM Studies s JOIN Enrollment e ON
-                e.IdStudy = s.IdStudy WHERE s.IdStudy = @Studies AND e.Semester = @Semester)
+                e.IdStudy = s.IdStudy WHERE s.Name = @Studies AND e.Semester = @Semester)
                 IF ( @IdStudy IS NULL)
                 BEGIN
                 Raiserror  ('Studia o podanej nazwie i semestrze nie istnieją',1,1);
@@ -168,7 +168,7 @@ namespace Cw5.Services
 
                 DECLARE @NewIdEnrollment INT = (SELECT IdEnrollment FROM Enrollment e JOIN Studies s ON
                                     s.IdStudy = e.IdStudy WHERE e.Semester = (@Semester +1) AND
-                                    s.IdStudy = @Studies)
+                                    s.Name = @Studies)
                 IF (@NewIdEnrollment IS NULL)
                 BEGIN
 
@@ -176,28 +176,42 @@ namespace Cw5.Services
                 VALUES (@@Identity+1,@Semester+1,@IdStudy,CURRENT_TIMESTAMP)
                 SET @NewIdEnrollment =(SELECT IdEnrollment FROM Enrollment e JOIN Studies s ON
                                     s.IdStudy = e.IdStudy WHERE e.Semester = (@Semester +1) AND
-                                    s.IdStudy = @Studies)
+                                    s.Name = @Studies)
                 END
 
                 UPDATE Student SET IdEnrollment = @NewIdEnrollment WHERE IdEnrollment = (SELECT IdEnrollment FROM Enrollment e JOIN Studies s ON
                                     s.IdStudy = e.IdStudy WHERE e.Semester = @Semester AND
-                                    s.IdStudy = @Studies);
+                                    s.Name = @Studies);
 
                 SET @NewSemester = @Semester +1;
                 RETURN
                 END;
                 */
 
-
-
-
-                com.CommandText = "PromoteStudents @Studies, @Semester, ";
+                com.CommandText = "PromoteStudents @Studies, @Semester, @NewSemseter OUT ";
                 com.CommandType = System.Data.CommandType.StoredProcedure;
                 com.Parameters.AddWithValue("Studies", request.Studies);
                 com.Parameters.AddWithValue("Semester", request.Semester);
-                dr = com.ExecuteReader();
-                return null;
+                var resultParam = new SqlParameter();
+                resultParam.ParameterName = "NewSemester";
+                resultParam.SqlDbType = SqlDbType.Int;
+                resultParam.Direction = ParameterDirection.Output;
+                com.Parameters.Add(resultParam);
+                int newSemester =-1;
+                using (var dr = com.ExecuteReader())
+                {
+                    if(dr.HasRows){
+                        newSemester = int.Parse(dr["NewSemester"].ToString());
+                    }
+                }
 
+                  
+                return new PromoteStudentsResponse
+                {
+                    Studies = request.Studies,
+                    Semester = (int)newSemester
+                    
+                };
 
             }
         }

@@ -38,7 +38,7 @@ namespace Cw5.Controllers
         }
 
         [HttpPost("promotions")]
-        public IActionResult PromoteStudents(PromoteStudentsRequest request)
+        public IActionResult PromoteStudents([FromBody]PromoteStudentsRequest request)
         {
             var promotionResult = _dbService.PromoteStudents(request);
             if (promotionResult == null)
