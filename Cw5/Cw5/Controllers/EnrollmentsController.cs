@@ -26,7 +26,6 @@ namespace Cw5.Controllers
                 if (enrollmentResult == null) return BadRequest("EnrollmentResult is null");
                 return  Created($"api/students/enrollments", enrollmentResult);
 
-
             }
             catch (EnrollmentException e)
             {
@@ -46,7 +45,6 @@ namespace Cw5.Controllers
                 return BadRequest($"W bazie danych nie istnieje wpis dotyczący {request.Studies} i semsttru {request.Semester}");
 
             }
-
             return Created("api/students", promotionResult);
 
         }

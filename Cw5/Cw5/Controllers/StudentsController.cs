@@ -3,7 +3,7 @@ using Cw5.DAL;
 using Cw5.Models;
 using Microsoft.AspNetCore.Mvc;
 
-namespace Cw.Controllers
+namespace Cw5.Controllers
 {
     [Route("api/students")]
     [ApiController]
